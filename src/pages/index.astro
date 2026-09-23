@@ -1,0 +1,118 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../data/site";
+import { home } from "../data/home";
+import { projects } from "../data/projects";
+import { toneText, toneHover, toneLink } from "../data/tones";
+import fs from "node:fs";
+import path from "node:path";
+
+const missing = (src: string) => src.startsWith("/") && !fs.existsSync(path.join(process.cwd(), "public", src));
+---
+
+<Base active="work">
+  <!-- Hero -->
+  <section class="relative w-full overflow-hidden pt-24 pb-20 md:pt-36 md:pb-28">
+    <div class="max-w-[1240px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop relative z-10">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          <span class="font-code-sm text-xs text-on-surface-variant uppercase tracking-widest">{home.status}</span>
+        </div>
+        <h1 class="font-headline-lg text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] text-on-surface tracking-tight font-medium leading-[1.15] mb-8">
+          {home.headline}
+        </h1>
+        <p class="font-body-lg text-lg md:text-xl text-on-surface-variant/90 leading-relaxed max-w-2xl mb-12">
+          {home.subhead}
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <a class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-on-surface text-surface font-medium text-sm tracking-tight transition-all duration-200 hover:bg-primary" href="#work">View Work</a>
+          <a class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-surface-container/60 hover:bg-surface-container text-on-surface border border-outline-variant/30 hover:border-outline-variant/60 font-medium text-sm tracking-tight transition-all duration-200" href="/contact/">Get in Touch</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured projects -->
+  <section class="w-full py-20 border-t border-outline-variant/15" id="work">
+    <div class="max-w-[1240px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+      <div class="flex items-center justify-between mb-16 md:mb-20">
+        <div>
+          <span class="font-code-sm text-xs text-primary uppercase tracking-widest block mb-2">Selected Works</span>
+          <h2 class="font-headline-md text-2xl md:text-3xl text-on-surface tracking-tight font-medium">Core Projects</h2>
+        </div>
+        <span class="font-code-sm text-xs text-outline tracking-wider">{home.workRange}</span>
+      </div>
+
+      <div class="flex flex-col gap-24 md:gap-32">
+        {
+          projects.map((p, i) => (
+            <article class:list={["group flex flex-col gap-8 lg:gap-14 items-center", i % 2 ? "lg:flex-row-reverse" : "lg:flex-row"]}>
+              <a
+                href={`/work/${p.slug}/`}
+                tabindex="-1"
+                aria-hidden="true"
+                class="w-full lg:w-3/5 rounded-2xl overflow-hidden bg-surface-container-low border border-outline-variant/20 shadow-xl transition-all duration-500 group-hover:border-outline-variant/50"
+              >
+                <div class="relative aspect-[16/10] overflow-hidden">
+                  {missing(p.image) ? (
+                    <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-outline">
+                      <span class="material-symbols-outlined text-3xl">image</span>
+                      <span class="font-code-sm text-code-sm">Add image: public{p.image}</span>
+                    </div>
+                  ) : (
+                  <img
+                    alt={p.imageAlt}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    class:list={[
+                      "w-full h-full transition-transform duration-700 ease-out group-hover:scale-[1.02]",
+                      p.imageFit === "contain" ? "object-contain p-6" : "object-cover",
+                    ]}
+                    style={p.imageBg && `background:${p.imageBg}`}
+                    src={p.image}
+                  />
+                  )}
+                </div>
+              </a>
+              <div class="w-full lg:w-2/5 flex flex-col items-start">
+                <span class:list={["font-code-sm text-xs uppercase tracking-wider mb-3", toneText[p.tone]]}>{p.cardEyebrow}</span>
+                <h3 class:list={["font-headline-sm text-2xl md:text-3xl text-on-surface tracking-tight mb-4 transition-colors", toneHover[p.tone]]}>
+                  {p.title}
+                </h3>
+                <p class="font-body-md text-on-surface-variant text-base leading-relaxed mb-6">{p.cardSummary}</p>
+                <a
+                  class:list={[
+                    "inline-flex items-center gap-2 font-medium text-sm text-on-surface group/link transition-colors pb-1 border-b border-outline-variant/40",
+                    toneLink[p.tone],
+                  ]}
+                  href={`/work/${p.slug}/`}
+                >
+                  <span>View Case Study</span>
+                  <span class="material-symbols-outlined text-base transition-transform group-hover/link:translate-x-1">arrow_forward</span>
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="w-full py-20 md:py-28 border-t border-outline-variant/15" id="contact">
+    <div class="max-w-[1240px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+      <div class="rounded-2xl bg-surface-container-low border border-outline-variant/20 p-10 md:p-16 flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div class="max-w-xl">
+          <span class="font-code-sm text-xs text-primary uppercase tracking-widest block mb-3">{home.cta.eyebrow}</span>
+          <h2 class="font-headline-md text-2xl md:text-3xl text-on-surface tracking-tight font-medium mb-3">{home.cta.heading}</h2>
+          <p class="font-body-md text-on-surface-variant text-base">{home.cta.body}</p>
+        </div>
+        <div class="shrink-0">
+          <a class="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-primary text-on-primary font-medium text-sm hover:bg-secondary-fixed transition-colors shadow-lg shadow-primary/10" href="/contact/">
+            {home.cta.button}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

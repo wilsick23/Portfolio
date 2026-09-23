@@ -1,0 +1,131 @@
+---
+import Base from "../../layouts/Base.astro";
+import Figure from "../../components/Figure.astro";
+import Block from "../../components/Block.astro";
+import { site } from "../../data/site";
+import { projects, type Project } from "../../data/projects";
+import { inline } from "../../lib/inline";
+
+export function getStaticPaths() {
+  return projects.map((project, index) => ({ params: { slug: project.slug }, props: { project, index } }));
+}
+
+interface Props {
+  project: Project;
+  index: number;
+}
+const { project: p, index } = Astro.props;
+const total = projects.length;
+const prev = projects[(index - 1 + total) % total];
+const next = projects[(index + 1) % total];
+const pad = (n: number) => String(n).padStart(2, "0");
+const overview = [
+  { label: "The Challenge", dot: "bg-outline", text: "text-outline", body: p.challenge },
+  { label: "The Solution", dot: "bg-primary", text: "text-primary", body: p.solution },
+];
+---
+
+<Base title={`${p.fullTitle} | ${site.name}`} description={p.summary} active="work">
+  <div class="bg-surface-container-lowest pt-8 pb-space-3xl">
+    <div class="max-w-[1240px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+      <!-- Header -->
+      <section class="pt-8 pb-16">
+        <div class="flex items-center justify-between mb-10">
+          <a class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-code-sm text-code-sm group" href="/#work">
+            <span class="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
+            <span>Back to Case Studies</span>
+          </a>
+          <span class="font-code-sm text-xs text-outline tracking-wider">PROJECT {pad(index + 1)} / {pad(total)}</span>
+        </div>
+        <div class="max-w-4xl flex flex-col gap-5">
+          <span class="font-label-caps text-label-caps uppercase tracking-widest text-primary font-semibold">{p.category}</span>
+          <h1 class="font-headline-lg text-4xl sm:text-5xl lg:text-[3.5rem] text-on-surface font-semibold tracking-tight leading-[1.12]">{p.fullTitle}</h1>
+          <p class="font-body-lg text-xl sm:text-2xl text-on-surface-variant font-light leading-relaxed max-w-3xl pt-2">{p.summary}</p>
+        </div>
+        <dl class="mt-14 pt-8 border-t border-outline-variant/30 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          {
+            p.meta.map((m) => (
+              <div class="flex flex-col gap-1.5">
+                <dt class="font-label-caps text-[0.7rem] uppercase tracking-wider text-outline">{m.label}</dt>
+                <dd class="font-title-md text-base text-on-surface font-medium">{m.value}</dd>
+                <dd class="font-body-sm text-xs text-on-surface-variant">{m.detail}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <!-- Hero media -->
+      <section class="pb-16">
+        <Figure src={p.heroImage ?? p.image} alt={p.imageAlt} caption={p.heroCaption} bg={p.imageBg} eager />
+      </section>
+
+      <!-- Challenge & solution -->
+      {
+        (p.challenge || p.solution) && (
+          <section class="py-16 border-t border-outline-variant/30">
+            <div class="mb-12">
+              <span class="font-label-caps text-label-caps uppercase text-primary tracking-widest font-semibold">Overview</span>
+              <h2 class="font-headline-md text-3xl sm:text-4xl text-on-surface font-medium mt-2">Problem &amp; Solution</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+              {overview.map(
+                (col) =>
+                  col.body && (
+                    <div class="flex flex-col gap-4">
+                      <div class:list={["inline-flex items-center gap-2 font-label-caps text-xs tracking-wider uppercase mb-1", col.text]}>
+                        <span class:list={["w-1.5 h-1.5 rounded-full", col.dot]} />
+                        {col.label}
+                      </div>
+                      <h3 class="font-headline-sm text-2xl text-on-surface font-medium leading-snug">{col.body.heading}</h3>
+                      {col.body.paragraphs.map((para) => (
+                        <p class="font-body-md text-on-surface-variant leading-relaxed" set:html={inline(para)} />
+                      ))}
+                    </div>
+                  ),
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- Sections -->
+      {
+        p.sections?.map((sec) => (
+          <section class="py-16 border-t border-outline-variant/30">
+            <div class="mb-10">
+              <span class="font-label-caps text-label-caps uppercase text-primary tracking-widest font-semibold">{sec.eyebrow}</span>
+              <h2 class="font-headline-md text-3xl sm:text-4xl text-on-surface font-medium mt-2">{sec.heading}</h2>
+            </div>
+            <div class="flex flex-col gap-8">
+              {sec.blocks.map((b) => (
+                <Block block={b} />
+              ))}
+            </div>
+          </section>
+        ))
+      }
+
+      <!-- Prev / next -->
+      <nav aria-label="More projects" class="pt-8 border-t border-outline-variant/30">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6 py-4">
+          <a class="group inline-flex items-center gap-3 text-on-surface hover:text-primary transition-colors" href={`/work/${prev.slug}/`}>
+            <span class="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
+            <div class="flex flex-col text-left">
+              <span class="font-label-caps text-[0.65rem] uppercase text-outline">Previous</span>
+              <span class="font-title-md text-sm font-medium">{prev.title}</span>
+            </div>
+          </a>
+          <a class="font-label-caps text-xs uppercase tracking-wider text-outline hover:text-on-surface transition-colors" href="/#work">All Projects</a>
+          <a class="group inline-flex items-center gap-3 text-on-surface hover:text-primary transition-colors text-right" href={`/work/${next.slug}/`}>
+            <div class="flex flex-col">
+              <span class="font-label-caps text-[0.65rem] uppercase text-outline">Next</span>
+              <span class="font-title-md text-sm font-medium">{next.title}</span>
+            </div>
+            <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </div>
+</Base>

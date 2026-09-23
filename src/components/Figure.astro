@@ -1,0 +1,38 @@
+---
+// Case-study image, capped in height so it never fills the whole screen; the frame
+// hugs the image. Local images (paths starting with "/") that don't exist yet in
+// public/ render as a labeled placeholder showing where to drop the file.
+import fs from "node:fs";
+import path from "node:path";
+
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  class?: string;
+  eager?: boolean;
+  bg?: string;
+}
+const { src, alt, caption, class: className = "", eager = false, bg } = Astro.props;
+const missing = src.startsWith("/") && !fs.existsSync(path.join(process.cwd(), "public", src));
+---
+
+<figure class:list={["flex flex-col items-center gap-3", className]}>
+  {
+    missing ? (
+      <div class="w-full max-w-3xl aspect-[16/9] rounded-xl border border-outline-variant/30 bg-surface-container-low flex flex-col items-center justify-center gap-2 text-outline">
+        <span class="material-symbols-outlined text-3xl">image</span>
+        <span class="font-code-sm text-code-sm">Add image: public{src}</span>
+      </div>
+    ) : (
+      <img
+        class="block w-auto h-auto max-w-full max-h-[55vh] rounded-xl border border-outline-variant/30 bg-surface-container-low"
+        style={bg && `background:${bg}`}
+        src={src}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+      />
+    )
+  }
+  {caption && <figcaption class="text-center font-code-sm text-xs text-on-surface-variant tracking-wide">{caption}</figcaption>}
+</figure>

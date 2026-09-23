@@ -1,0 +1,164 @@
+---
+// Renders one case-study content block. Block types are defined in src/data/types.ts.
+import Figure from "./Figure.astro";
+import { inline } from "../lib/inline";
+import { toneText } from "../data/tones";
+import type { Block } from "../data/types";
+
+interface Props {
+  block: Block;
+}
+const { block: b } = Astro.props;
+const prose = "font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-3xl";
+---
+
+{b.type === "p" && <p class={prose} set:html={inline(b.text)} />}
+
+{
+  b.type === "callout" && (
+    <div class="flex gap-4 max-w-3xl p-6 rounded-xl bg-primary/5 border border-primary/20">
+      <span class="material-symbols-outlined text-primary text-2xl shrink-0">{b.icon ?? "lightbulb"}</span>
+      <p class="font-body-md text-on-surface leading-relaxed" set:html={inline(b.text)} />
+    </div>
+  )
+}
+
+{b.type === "image" && <Figure src={b.src} alt={b.alt} caption={b.caption} />}
+
+{
+  b.type === "gallery" && (
+    <div class="flex flex-col gap-3">
+      <div class:list={["grid grid-cols-1 gap-6", b.items.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"]}>
+        {b.items.map((img) => (
+          <Figure src={img.src} alt={img.alt} />
+        ))}
+      </div>
+      {b.caption && <p class="text-center font-code-sm text-xs text-on-surface-variant tracking-wide">{b.caption}</p>}
+    </div>
+  )
+}
+
+{
+  b.type === "list" &&
+    (b.ordered ? (
+      <ol class="flex flex-col gap-4 max-w-3xl list-decimal pl-6 marker:text-primary marker:font-code-sm">
+        {b.items.map((it) => (
+          <li class="font-body-md text-on-surface-variant leading-relaxed pl-1">
+            {it.lead && <strong class="text-on-surface font-semibold" set:html={inline(it.lead)} />} <Fragment set:html={inline(it.text)} />
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <ul class="flex flex-col gap-4 max-w-3xl">
+        {b.items.map((it) => (
+          <li class="flex gap-3 font-body-md text-on-surface-variant leading-relaxed">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-[0.6rem]" aria-hidden="true" />
+            <span>
+              {it.lead && <strong class="text-on-surface font-semibold" set:html={inline(it.lead)} />} <Fragment set:html={inline(it.text)} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    ))
+}
+
+{
+  b.type === "cards" && (
+    <div class:list={["grid grid-cols-1 gap-6 lg:gap-8", b.items.length % 3 === 0 || b.items.length > 4 ? "md:grid-cols-2 lg:grid-cols-3" : "md:grid-cols-2"]}>
+      {b.items.map((c) => (
+        <div class="flex flex-col gap-3 p-7 rounded-xl bg-surface-container-low border border-outline-variant/20 hover:border-outline-variant/40 transition-colors">
+          {c.icon && (
+            <div class:list={["w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center mb-1", toneText[c.tone ?? "primary"]]}>
+              <span class="material-symbols-outlined text-2xl">{c.icon}</span>
+            </div>
+          )}
+          <h3 class="font-title-md text-lg text-on-surface font-medium">{c.title}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" set:html={inline(c.body)} />
+          {c.detail && <p class="mt-auto pt-3 border-t border-outline-variant/20 font-code-sm text-code-sm text-primary">{c.detail}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  b.type === "quotes" && (
+    <div class:list={["grid grid-cols-1 gap-6", b.items.length > 1 && "md:grid-cols-3"]}>
+      {b.items.map((q) => (
+        <figure class="flex flex-col gap-4 pl-5 border-l-2 border-primary/40 max-w-3xl">
+          <blockquote class="font-body-lg text-body-lg text-on-surface italic font-light leading-relaxed">“{q.text}”</blockquote>
+          <figcaption class="font-code-sm text-xs text-outline uppercase tracking-wider">{q.source}</figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+{
+  b.type === "stats" && (
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
+      {b.items.map((o) => (
+        <div class="flex flex-col gap-2">
+          <span class:list={["font-display text-5xl lg:text-6xl font-semibold tracking-tight", toneText[o.tone]]}>{o.value}</span>
+          <span class="font-title-md text-xl text-on-surface font-medium mt-2">{o.label}</span>
+          <p class="font-body-sm text-on-surface-variant leading-relaxed">{o.body}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  b.type === "bars" && (
+    <figure class="max-w-3xl flex flex-col gap-4 p-7 rounded-xl bg-surface-container-low border border-outline-variant/20">
+      <figcaption class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{b.title}</figcaption>
+      <dl class="flex flex-col gap-4">
+        {b.items.map((bar) => (
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-baseline justify-between gap-4">
+              <dt class="font-body-sm text-body-sm text-on-surface">{bar.label}</dt>
+              <dd class="font-code-sm text-code-sm text-on-surface-variant tabular-nums">
+                {bar.value} · {bar.pct}%
+              </dd>
+            </div>
+            <div class="h-2 rounded-full bg-surface-container overflow-hidden" aria-hidden="true">
+              <div class="h-full rounded-full bg-primary" style={`width:${bar.pct}%`} />
+            </div>
+          </div>
+        ))}
+      </dl>
+    </figure>
+  )
+}
+
+{
+  b.type === "table" && (
+    <div class="rounded-xl border border-outline-variant/20 overflow-hidden" role="table">
+      <div
+        class="hidden md:grid bg-surface-container-low border-b border-outline-variant/20"
+        style={`grid-template-columns:repeat(${b.headers.length},minmax(0,1fr))`}
+        role="row"
+      >
+        {b.headers.map((h) => (
+          <div class="px-5 py-3 font-label-caps text-label-caps uppercase tracking-wider text-outline" role="columnheader">
+            {h}
+          </div>
+        ))}
+      </div>
+      {b.rows.map((row) => (
+        <div
+          class="grid grid-cols-1 md:[grid-template-columns:var(--cols)] border-b last:border-b-0 border-outline-variant/20 hover:bg-surface-container-low/60 transition-colors"
+          style={`--cols:repeat(${b.headers.length},minmax(0,1fr))`}
+          role="row"
+        >
+          {row.map((cell, i) => (
+            <div class="px-5 py-2 md:py-4 first:pt-4 last:pb-4" role="cell">
+              {b.headers[i] && <span class="md:hidden block font-label-caps text-[0.65rem] uppercase tracking-wider text-outline mb-1">{b.headers[i]}</span>}
+              <span class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" set:html={inline(cell)} />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}

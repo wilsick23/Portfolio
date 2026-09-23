@@ -1,0 +1,49 @@
+---
+import { site } from "../data/site";
+const year = new Date().getFullYear();
+---
+
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/20">
+  <div class="max-w-[1240px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-12">
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col gap-1 text-center lg:text-left">
+        <span class="font-title-md text-title-md text-on-surface">{site.name}</span>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">© {year} — Systems, design, and ergonomics.</p>
+      </div>
+      <div class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/20">
+        <span class="w-2 h-2 rounded-full bg-primary"></span>
+        <span class="font-code-sm text-code-sm text-on-surface-variant">
+          {site.location}<span id="local-time" data-tz={site.timezone}></span>
+        </span>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-5">
+        {
+          site.socials.map((s) => (
+            <a class="font-code-sm text-code-sm text-on-surface-variant hover:text-primary transition-colors" href={s.href} target="_blank" rel="noopener">
+              {s.label}
+            </a>
+          ))
+        }
+      </div>
+      <a class="inline-flex items-center gap-1 font-label-caps text-label-caps uppercase text-on-surface-variant hover:text-on-surface transition-colors" href="#top">
+        <span class="material-symbols-outlined text-sm">arrow_upward</span>
+        Top
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const el = document.getElementById("local-time");
+  if (el) {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: el.dataset.tz,
+      timeZoneName: "short",
+    });
+    const tick = () => (el.textContent = " • " + fmt.format(new Date()));
+    tick();
+    setInterval(tick, 30_000);
+  }
+</script>
